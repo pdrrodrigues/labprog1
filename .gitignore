@@ -33,3 +33,9 @@
 
 # VSCode Configuration
 .vscode
+
+# Any Folder with Executables Files
+*/output
+
+# Ignore HQs Folder
+hqs
