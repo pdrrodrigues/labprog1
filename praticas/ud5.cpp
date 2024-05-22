@@ -8,13 +8,17 @@ public:
         contagem++;
     }
 
+    Contador(Contador &co) {
+        contagem++;
+    }
+
     static void contagemAtual() {
         cout << "A contagem atual e " << contagem << endl;
         return;
     }
 
     ~Contador() {
-        contagem--;
+        contagem = contagem > 0 ? contagem - 1: 0;
     }
 private:
     static int contagem;
