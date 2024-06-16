@@ -4,7 +4,7 @@ using namespace std;
 
 class Lig4 {
 public:
-    Lig4(int m, int n): m(m), n(n) {
+    Lig4(int m, int n, unsigned int movimentos): m(m), n(n), movimentos{movimentos} {
         tabuleiro = new char*[this->n];
         for(int i=0; i<this->n; i++) {
             tabuleiro[i] = new char[this->m];
@@ -34,40 +34,32 @@ public:
         return;
     }
 
-    // Mudar
+    unsigned int getMovimentos() const {
+        return movimentos;
+    }
+
     void alternarJogador() {
-        vez = (vez == 'X') ? 'O' : 'X';
+        vez = movimentos % 2 ? 'X' : 'O';
         return;
     }
 
-    // Mudar
     bool jogadaValida(int mi) {
-        if(mi <= 0 || mi > m) {
-            cout << "Jogada invalida, tente novamente!" << endl;
+        if (tabuleiro[0][mi] != '.') {
             return false;
-        } else if(tabuleiro[0][mi-1] != '.') {
-            cout << "Coluna cheia, tente novamente!" << endl;
-            return false;
-        } else {
-            cout << "Jogada valida" << endl;
-            return true;
         }
+
+        movimentos++;
+        return true;
     }
 
-    // Mudar
-    void jogada() {
-        int mi;
-        do {
-            cout << "Insira a coluna que deseja jogar: ";
-            cin >> mi;
-        } while(!jogadaValida(mi));
-
-        for(int i=n-1; i>=0; i--) {
-            if(tabuleiro[i][mi-1] == '.') {
-                tabuleiro[i][mi-1] = vez;
+    void jogada(int mi) {
+        for(int i=n-1; i>=0; i++) {
+            if(tabuleiro[i][mi] == '.') {
+                tabuleiro[i][mi] = vez;
                 break;
             }
         }
+
         alternarJogador();
         return;
     }
@@ -99,18 +91,18 @@ public:
     }
 
     // Mudar
-    void gerencia() {
-        bool fim = false;
-        while(!fim) {
-            exibe();
-            jogada();
-            if(isFull()) {
-                fim = resultadoFinal();
-            }
-        }
+    // void gerencia() {
+    //     bool fim = false;
+    //     while(!fim) {
+    //         exibe();
+    //         jogada();
+    //         if(isFull()) {
+    //             fim = resultadoFinal();
+    //         }
+    //     }
 
-        return;
-    }
+    //     return;
+    // }
 
     ~Lig4() {
         for(int i=0; i<n; i++) {
@@ -123,20 +115,18 @@ public:
 private:
     int m;
     int n;
-    static const int k = 4;
+    static const int FILEIRA = 4;
     char vez = 'X';
     char **tabuleiro;
+    unsigned int movimentos;
 
     bool isFull() {
         bool isFull = true;
-        for(int i=0; i<n; i++) {
-            for(int j=0; j<m; j++) {
-                if(tabuleiro[i][j] == '.'){
-                    isFull = false;
-                    break;
-                }
+        for(int j=0; j<m; j++) {
+            if(tabuleiro[0][j] == '.'){
+                isFull = false;
+                break;
             }
-            if(!isFull) break;
         }
 
         return isFull;
