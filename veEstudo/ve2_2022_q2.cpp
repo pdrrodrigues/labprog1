@@ -49,7 +49,7 @@ public:
     }
 
     int operator-(int num) {
-        int found = std::count_if(orderedVector.begin(), orderedVector.end(), [num](int i){ return i < num });
+        int found = std::count_if(orderedVector.begin(), orderedVector.end(), [num](int i){ return i < num; });
         return found;
     }
 
