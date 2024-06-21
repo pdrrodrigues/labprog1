@@ -6,6 +6,8 @@
 
 using namespace std;
 
+enum Resultado_atual { Continua, Vitoria_Jogador_1, Vitoria_Jogador_2, Empate };
+
 class Lig4 {
 public:
     Lig4(int n, int m): m(m), n(n) {
@@ -21,23 +23,23 @@ public:
         }
     }
 
-    Lig4(const Lig4 &cp) {
-        m = cp.m;
-        n = cp.n;
-        vez = cp.vez;
-        tabuleiro = new char*[n];
-        for(int i = 0; i < n; ++i) {
-            for(int j = 0; j < m; ++j) {
-                tabuleiro[i] = new char[m];
-            }
-        }
+    // Lig4(const Lig4 &cp) {
+    //     m = cp.m;
+    //     n = cp.n;
+    //     vez = cp.vez;
+    //     tabuleiro = new char*[n];
+    //     for(int i = 0; i < n; ++i) {
+    //         for(int j = 0; j < m; ++j) {
+    //             tabuleiro[i] = new char[m];
+    //         }
+    //     }
 
-        for(int i = 0; i < n; ++i) {
-            for(int j = 0; j < m; ++j) {
-                tabuleiro[i][j] = cp.tabuleiro[i][j];
-            }
-        }
-    }
+    //     for(int i = 0; i < n; ++i) {
+    //         for(int j = 0; j < m; ++j) {
+    //             tabuleiro[i][j] = cp.tabuleiro[i][j];
+    //         }
+    //     }
+    // }
 
     void exibe() {
         for(int i=0; i<n; i++) {
@@ -94,6 +96,7 @@ public:
             }
         }
         
+        return;
     }
 
     void resetar() {
@@ -107,40 +110,67 @@ public:
         return;
     }
 
-    bool jogadaVencedora(char jogador) const {       
-        for(int r = 0; r < n; r++) {
-            for(int c = 0; c < m - 3; c++) {
-                if(tabuleiro[r][c] == jogador && tabuleiro[r][c+1] == jogador && tabuleiro[r][c+2] == jogador && tabuleiro[r][c+3] == jogador) {
-                    return true;
+    int jogadaVencedora(char jogador) const {
+        int pontos = 0;       
+        for(int i = 0; i < n; i++) {
+            for(int j = 0; j < m - 3; j++) {
+                if(tabuleiro[i][j] == jogador && tabuleiro[i][j+1] == jogador && tabuleiro[i][j+2] == jogador && tabuleiro[i][j+3] == jogador) {
+                    ++pontos;
                 }
             }
         }
         
-        for(int c = 0; c < m; c++) {
-            for(int r = 0; r < n - 3; r++) {
-                if(tabuleiro[r][c] == jogador && tabuleiro[r+1][c] == jogador && tabuleiro[r+2][c] == jogador && tabuleiro[r+3][c] == jogador) {
-                    return true;
+        for(int j = 0; j < m; j++) {
+            for(int i = 0; i < n - 3; i++) {
+                if(tabuleiro[i][j] == jogador && tabuleiro[i+1][j] == jogador && tabuleiro[i+2][j] == jogador && tabuleiro[i+3][j] == jogador) {
+                    ++pontos;
                 }
             }
         }
         
-        for(int r = 0; r < n - 3; r++) {
-            for(int c = 0; c < m - 3; c++) {
-                if(tabuleiro[r][c] == jogador && tabuleiro[r+1][c+1] == jogador && tabuleiro[r+2][c+2] == jogador && tabuleiro[r+3][c+3] == jogador) {
-                    return true;
+        for(int i = 0; i < n - 3; i++) {
+            for(int j = 0; j < m - 3; j++) {
+                if(tabuleiro[i][j] == jogador && tabuleiro[i+1][j+1] == jogador && tabuleiro[i+2][j+2] == jogador && tabuleiro[i+3][j+3] == jogador) {
+                    ++pontos;
                 }
             }
         }
         
-        for(int r = 3; r < n; r++) {
-            for(int c = 0; c < m - 3; c++) {
-                if(tabuleiro[r][c] == jogador && tabuleiro[r-1][c+1] == jogador && tabuleiro[r-2][c+2] == jogador && tabuleiro[r-3][c+3] == jogador) {
-                    return true;
+        for(int i = 3; i < n; i++) {
+            for(int j = 0; j < m - 3; j++) {
+                if(tabuleiro[i][j] == jogador && tabuleiro[i-1][j+1] == jogador && tabuleiro[i-2][j+2] == jogador && tabuleiro[i-3][j+3] == jogador) {
+                    ++pontos;
                 }
             }
         }
 
-        return false;
+        return pontos;
+    }
+
+    bool cheio() {
+        bool cheio = true;
+        for(int j = 0; j < m; ++j) {
+            if(tabuleiro[0][j] == '.'){
+                cheio = false;
+                break;
+            }
+        }
+
+        return cheio;
+    }
+
+    Resultado_atual resultadoFinal() {
+        int jogador1Pontos = this->jogadaVencedora('X');
+        int jogador2Pontos = this->jogadaVencedora('O');
+        if(jogador1Pontos > jogador2Pontos) {
+            return Vitoria_Jogador_1;
+        } else if (jogador1Pontos < jogador2Pontos) {
+            return Vitoria_Jogador_2;
+        } else if(!cheio()) {
+            return Continua;
+        } else {
+            return Empate;
+        }
     }
 
     ~Lig4() {
@@ -166,7 +196,7 @@ public:
         }
     }
 
-    Lig4Tradicional(Lig4Tradicional &cp): Lig4(cp), dificuldade(cp.dificuldade) {}
+    // Lig4Tradicional(Lig4Tradicional &cp): Lig4(cp), dificuldade(cp.dificuldade) {}
 
     int jogadorAleatorio() {
         random_device rd;
@@ -181,20 +211,20 @@ public:
 
     array<int, 2> miniMax(int profundidade, int alfa, int beta, int turnos) {
         if (profundidade == 0 || profundidade >= (NUM_COL * NUM_LIN) - turnos) {
-            return array<int, 2>{this->valorTabuleiro(this->getTabuleiro(), 'X'), -1};
+            return array<int, 2>{this->valorTabuleiro('X'), -1};
         }
         if (this->getJogador() == 'X') {
             array<int, 2> valorAtual = {INT_MIN, -1};
-            if (this->jogadaVencedora('O')) {
+            if (this->resultadoFinal() == Vitoria_Jogador_2) {
                 return valorAtual;
             } 
-            for (int c = 0; c < NUM_COL; c++) {
-                if (this->jogadaValida(ordemColunas[c])) {
-                    this->jogada(ordemColunas[c]);
+            for (int j = 0; j < NUM_COL; j++) {
+                if (this->jogadaValida(ordemColunas[j])) {
+                    this->jogada(ordemColunas[j]);
                     int valor = this->miniMax(profundidade - 1, alfa, beta, turnos)[0];
-                    this->desfazerJogada(ordemColunas[c]);
+                    this->desfazerJogada(ordemColunas[j]);
                     if (valor > valorAtual[0]) {
-                        valorAtual = {valor, ordemColunas[c]};
+                        valorAtual = {valor, ordemColunas[j]};
                     }
                     alfa = max(alfa, valorAtual[0]);
                     if (alfa >= beta) { break; }
@@ -204,16 +234,16 @@ public:
         }
         else {
             array<int, 2> valorAtual = {INT_MAX, -1};
-            if (this->jogadaVencedora('X')) {
+            if (this->resultadoFinal() == Vitoria_Jogador_1) {
                 return valorAtual;
             }
-            for (int c = 0; c < NUM_COL; c++) {
-                if (this->jogadaValida(ordemColunas[c])) {
-                    this->jogada(ordemColunas[c]);
+            for (int j = 0; j < NUM_COL; j++) {
+                if (this->jogadaValida(ordemColunas[j])) {
+                    this->jogada(ordemColunas[j]);
                     int valor = this->miniMax(profundidade - 1, alfa, beta, turnos)[0];
-                    this->desfazerJogada(ordemColunas[c]);
+                    this->desfazerJogada(ordemColunas[j]);
                     if (valor < valorAtual[0]) {  
-                        valorAtual = {valor, ordemColunas[c]};
+                        valorAtual = {valor, ordemColunas[j]};
                     }
                     beta = min(beta, valorAtual[0]);
                     if (alfa >= beta) { break; }
@@ -223,68 +253,62 @@ public:
         } 
     }
 
-    static int valorTabuleiro(char** tabuleiro, char p) {
-        int score = 0;
+    int valorTabuleiro(char jogador) {
+        int valor = 0;
         vector<char> vl(NUM_COL);
         vector<char> vc(NUM_LIN);
         vector<char> conjunto(4);
         
-        for (int r = 0; r < NUM_LIN; r++) {
-            for (int c = 0; c < NUM_COL; c++) {
-                vl[c] = tabuleiro[r][c];
+        for (int lin = 0; lin < NUM_LIN; lin++) {
+            for (int col = 0; col < NUM_COL; col++) {
+                vl[col] = this->getTabuleiro()[lin][col];
             }
-            for (int c = 0; c < NUM_COL - 3; c++) {
+            for (int col = 0; col < NUM_COL - 3; col++) {
                 for (int i = 0; i < 4; i++) {
-                    conjunto[i] = vl[c + i];
+                    conjunto[i] = vl[col + i];
                 }
-                score += valorConjunto(conjunto, p);
+                valor += valorConjunto(conjunto, jogador);
             }
         }
         
-        for (int c = 0; c < NUM_COL; c++) {
-            for (int r = 0; r < NUM_LIN; r++) {
-                vc[r] = tabuleiro[r][c];
+        for (int col = 0; col < NUM_COL; col++) {
+            for (int lin = 0; lin < NUM_LIN; lin++) {
+                vc[lin] = this->getTabuleiro()[lin][col];
             }
-            for (int r = 0; r < NUM_LIN - 3; r++) {
+            for (int lin = 0; lin < NUM_LIN - 3; lin++) {
                 for (int i = 0; i < 4; i++) {
-                    conjunto[i] = vc[r + i];
+                    conjunto[i] = vc[lin + i];
                 }
-                score += valorConjunto(conjunto, p);
+                valor += valorConjunto(conjunto, jogador);
             }
         }
         
-        for (int r = 0; r < NUM_LIN - 3; r++) {
-            for (int c = 0; c < NUM_COL; c++) {
-                vl[c] = tabuleiro[r][c];
-            }
-            for (int c = 0; c < NUM_COL - 3; c++) {
+        for (int lin = 0; lin < NUM_LIN - 3; lin++) {
+            for (int col = 0; col < NUM_COL - 3; col++) {
                 for (int i = 0; i < 4; i++) {
-                    conjunto[i] = tabuleiro[r + i][c + i];
+                    conjunto[i] = this->getTabuleiro()[lin + i][col + i];
                 }
-                score += valorConjunto(conjunto, p);
+                valor += valorConjunto(conjunto, jogador);
             }
         }
 
-        for (int r = 0; r < NUM_LIN - 3; r++) {
-            for (int c = 0; c < NUM_COL; c++) {
-                vl[c] = tabuleiro[r][c];
-            }
-            for (int c = 0; c < NUM_COL - 3; c++) {
+        for (int lin = 0; lin < NUM_LIN - 3; lin++) {
+            for (int col = 0; col < NUM_COL - 3; col++) {
                 for (int i = 0; i < 4; i++) {
-                    conjunto[i] = tabuleiro[r + 3 - i][c + i];
+                    conjunto[i] = this->getTabuleiro()[lin + 3 - i][col + i];
                 }
-                score += valorConjunto(conjunto, p);
+                valor += valorConjunto(conjunto, jogador);
             }
         }
-        return score;
+        return valor;
     }
 
-    static int valorConjunto(vector<char> v, char p) {
+    static int valorConjunto(vector<char> v, char jogador) {
         int bom = 0;
         int ruim = 0;
         int vazio = 0;
         for (char ch : v) {
-            if (ch == p) bom++;
+            if (ch == jogador) bom++;
             if (ch == 'O' || ch == 'X') ruim++;
             if (ch == '.') vazio++;
         }
@@ -303,10 +327,10 @@ public:
         return valor;
     }
 
-    char jogar() {
-        bool fim = false;
+    Resultado_atual jogar() {
+        Resultado_atual fim = Continua;
         int turnos = 0;
-        while(!fim) {
+        while(fim == Continua) {
             if(this->getJogador() == 'X') {
                 this->jogada(this->jogadorIA(turnos));
             } else if (this->getJogador() == 'O') {
@@ -320,13 +344,10 @@ public:
                 this->jogada(jogada);
             }
 
-            if (turnos == NUM_COL * NUM_LIN) {
-                return 'E';
-            }
-            fim = this->jogadaVencedora(this->getJogador() == 'X' ? 'O' : 'X');
+            fim = this->resultadoFinal();
             ++turnos;
         }
-        return ((this->getJogador() == 'X') ? 'O' : 'X');
+        return fim;
     }
 
     ~Lig4Tradicional() {}
@@ -338,21 +359,38 @@ private:
 };
 
 int main() {
-    const int total = 10000;
+    // const int total = 100;
     int count = 0;
-    char ganhador;
+    Resultado_atual ganhador;
     Lig4Tradicional l = Lig4Tradicional(5);
 
-    for(int i = 0; i < total; ++i){
+    // for(int i = 0; i < total; ++i){
+    //     ganhador = l.jogar();
+    //     l.exibe();
+    //     l.resetar();
+
+    //     if(ganhador == Vitoria_Jogador_1) {
+    //         ++count;
+    //         cout << "Vitorias do jogador 1: " << count << endl;
+    //     }
+    // }
+
+    do{
         ganhador = l.jogar();
         l.exibe();
         l.resetar();
 
-        if(ganhador == 'X') {
+        if(ganhador == Vitoria_Jogador_1) {
             ++count;
+            cout << "Vitorias do jogador 1: " << count << endl;
         }
-    }
+    } while(ganhador == Vitoria_Jogador_1);
 
-    cout <<  "Vitorias: " << count << endl;
+    if(ganhador == Empate) {
+        cout << "Empate" << endl;
+    } else {
+        cout << "Vitorias do jogador 2" << endl;
+    }
+    
     return 0;
 }
