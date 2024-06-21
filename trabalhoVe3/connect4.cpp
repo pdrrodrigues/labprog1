@@ -1,10 +1,12 @@
 #include <iostream>
+#include <random>
+#include <array>
 
 using namespace std;
 
 class Lig4 {
 public:
-    Lig4(int m, int n, unsigned int movimentos): m(m), n(n), movimentos{movimentos} {
+    Lig4(int n, int m): m(m), n(n) {
         tabuleiro = new char*[this->n];
         for(int i=0; i<this->n; i++) {
             tabuleiro[i] = new char[this->m];
@@ -34,12 +36,20 @@ public:
         return;
     }
 
-    unsigned int getMovimentos() const {
-        return movimentos;
+    // int getMovimentos() const {
+    //     return movimentos;
+    // }
+
+    char getJogador() const {
+        return vez;
+    }
+
+    char** getTabuleiro() const {
+        return tabuleiro;
     }
 
     void alternarJogador() {
-        vez = movimentos % 2 ? 'X' : 'O';
+        vez = (vez == 'O') ? 'X' : 'O';
         return;
     }
 
@@ -48,7 +58,6 @@ public:
             return false;
         }
 
-        movimentos++;
         return true;
     }
 
@@ -64,45 +73,76 @@ public:
         return;
     }
 
-    // Mudar
-    bool resultadoFinal() {
-        pair<int, int> pontos;
-        int xpontos = 0, opontos = 0;
-
-        pontos = horPoints();
-        xpontos += pontos.first;
-        opontos += pontos.second;
-        pontos = verPoints();
-        xpontos += pontos.first;
-        opontos += pontos.second;
-
-        cout << xpontos << endl;
-        cout << opontos << endl;
-        exibe();
-        if(xpontos == opontos) {
-            cout << "O resultado final e um empate!" << endl;
-        } else if(xpontos > opontos) {
-            cout << "O jogador 'X' ganhou!" << endl;
-        } else {
-            cout << "O jogador 'O' ganhou!" << endl;
+    bool jogadaVencedora(char jogador) {
+        int sequenciaVencedora = 0;
+        for (int c = 0; c < m - 3; c++) {
+            for (int r = 0; r < n; r++) {
+                for (int i = 0; i < 4; i++) {
+                    if (tabuleiro[r][c + i] == jogador) {
+                        sequenciaVencedora++;
+                    }
+                    if (sequenciaVencedora == 4) { return true; }
+                }
+                sequenciaVencedora = 0;
+            }
         }
 
-        return true;
+        for (int c = 0; c < m; c++) {
+            for (int r = 0; r < n - 3; r++) {
+                for (int i = 0; i < 4; i++) {
+                    if (tabuleiro[r + i][c] == jogador) {
+                        sequenciaVencedora++;
+                    }
+                    if (sequenciaVencedora == 4) { return true; }
+                }
+                sequenciaVencedora = 0;
+            }
+        }
+
+        for (int c = 0; c < m - 3; c++) {
+            for (int r = 3; r < n; r++) {
+                for (int i = 0; i < 4; i++) {
+                    if (tabuleiro[r - i][c + i] == jogador) {
+                        sequenciaVencedora++;
+                    }
+                    if (sequenciaVencedora == 4) { return true; }
+                }
+                sequenciaVencedora = 0;
+            }
+        }
+
+        for (int c = 0; c < m - 3; c++) {
+            for (int r = 0; r < n - 3; r++) {
+                for (int i = 0; i < 4; i++) {
+                    if (tabuleiro[r + i][c + i] == jogador) {
+                        sequenciaVencedora++;
+                    }
+                    if (sequenciaVencedora == 4) { return true; }
+                }
+                sequenciaVencedora = 0;
+            }
+        }
+        return false;
     }
 
-    // Mudar
-    // void gerencia() {
-    //     bool fim = false;
-    //     while(!fim) {
-    //         exibe();
-    //         jogada();
-    //         if(isFull()) {
-    //             fim = resultadoFinal();
-    //         }
-    //     }
+    Lig4(const Lig4 &cp) {
+        m = cp.m;
+        n = cp.n;
+        vez = cp.vez;
+        // movimentos = cp.movimentos;
+        tabuleiro = new char*[n];
+        for(int i = 0; i < n; ++i) {
+            for(int j = 0; j < m; ++j) {
+                tabuleiro[i] = new char[m];
+            }
+        }
 
-    //     return;
-    // }
+        for(int i = 0; i < n; ++i) {
+            for(int j = 0; j < m; ++j) {
+                tabuleiro[i][j] = cp.tabuleiro[i][j];
+            }
+        }
+    }
 
     ~Lig4() {
         for(int i=0; i<n; i++) {
@@ -115,105 +155,182 @@ public:
 private:
     int m;
     int n;
-    static const int FILEIRA = 4;
     char vez = 'X';
     char **tabuleiro;
-    unsigned int movimentos;
+    // int movimentos = 0;
+};
 
-    bool isFull() {
-        bool isFull = true;
-        for(int j=0; j<m; j++) {
-            if(tabuleiro[0][j] == '.'){
-                isFull = false;
-                break;
-            }
-        }
-
-        return isFull;
+class Lig4Tradicional: public Lig4 {
+public:
+    Lig4Tradicional(int dificuldade, default_random_engine engine): Lig4(6, 7) {
+        this->dificuldade = dificuldade;
+        this->engine = engine;
     }
 
-    // Mudar
-    pair<int, int> horPoints() {
-        pair<int, int> horPoints;
-        horPoints.first = 0;
-        horPoints.second = 0;
+    Lig4Tradicional(Lig4Tradicional &cp): Lig4(cp) {
+        dificuldade = cp.dificuldade;
+        engine = cp.engine;
+    }
 
-        for(int i=0; i<n; i++) {
-            int xtiles = 0;
-            for(int j=0; j<m; j++) {
-                if(tabuleiro[i][j] == 'O') {
-                    xtiles = 0;
-                } else {
-                    xtiles++;
-                    if(xtiles == 4){
-                        horPoints.first += 1;
-                        xtiles = 0;
+    int jogadorAleatorio(default_random_engine &engine) {
+        uniform_int_distribution chance{0, 6};
+        return chance(engine);
+    }
+
+    int jogadorIA() {
+        return minimax(dificuldade)[1];
+    }
+
+    array<int, 2> minimax(int profundidade, int alfa, int beta, int turnos) {
+       if (profundidade == 0 || profundidade >= (7 * 6) - turnos) {
+            return array<int, 2>{tabScore(b, COMPUTER), -1};
+        }
+        if (p == COMPUTER) {
+            array<int, 2> moveSoFar = {INT_MIN, -1};
+            if (winningMove(b, PLAYER)) {
+                return moveSoFar;
+            } 
+            for (int c = 0; c < 7; c++) {
+                if (b[NUM_ROW - 1][c] == 0) {
+                    vector<vector<int> > newBoard = copyBoard(b);
+                    makeMove(newBoard, c, p);
+                    int score = miniMax(newBoard, d - 1, alf, bet, PLAYER)[0];
+                    if (score > moveSoFar[0]) {
+                        moveSoFar = {score, (int)c};
                     }
+                    alf = max(alf, moveSoFar[0]);
+                    if (alf >= bet) { break; }
                 }
             }
+            return moveSoFar;
         }
-
-        for(int i=0; i<n; i++) {
-            int otiles = 0;
-            for(int j=0; j<m; j++) {
-                if(tabuleiro[i][j] == 'X') {
-                    otiles = 0;
-                } else {
-                    otiles++;
-                    if(otiles == 4){
-                        horPoints.second += 1;
-                        otiles = 0;
+        else {
+            array<int, 2> moveSoFar = {INT_MAX, -1};
+            if (winningMove(b, COMPUTER)) {
+                return moveSoFar;
+            }
+            for (unsigned int c = 0; c < NUM_COL; c++) {
+                if (b[NUM_ROW - 1][c] == 0) {
+                    vector<vector<int> > newBoard = copyBoard(b);
+                    makeMove(newBoard, c, p);
+                    int score = miniMax(newBoard, d - 1, alf, bet, COMPUTER)[0];
+                    if (score < moveSoFar[0]) {
+                        moveSoFar = {score, (int)c};
                     }
+                    bet = min(bet, moveSoFar[0]);
+                    if (alf >= bet) { break; }
                 }
             }
-        }
+            return moveSoFar;
+        } 
+    }
 
-        return horPoints;
-    }   
-
-    // Mudar
-    pair<int, int> verPoints() {
-        pair<int, int> verPoints;
-        verPoints.first = 0;
-        verPoints.second = 0;
+    static int tabScore(char** tabuleiro, unsigned int p) {
+        int score = 0;
+        vector<unsigned int> rs(NUM_COL);
+        vector<unsigned int> cs(NUM_ROW);
+        vector<unsigned int> set(4);
         
-        for(int j=0; j<m; j++) {
-            int xtiles = 0;
-            for(int i=0; i<n; i++) {
-                if(tabuleiro[i][j] == 'O') {
-                    xtiles = 0;
-                } else {
-                    xtiles++;
-                    if(xtiles == 4){
-                        verPoints.first += 1;
-                        xtiles = 0;
-                    }
+        for (unsigned int r = 0; r < NUM_ROW; r++) {
+            for (unsigned int c = 0; c < NUM_COL; c++) {
+                rs[c] = b[r][c];
+            }
+            for (unsigned int c = 0; c < NUM_COL - 3; c++) {
+                for (int i = 0; i < 4; i++) {
+                    set[i] = rs[c + i];
                 }
+                score += scoreSet(set, p);
+            }
+        }
+        
+        for (unsigned int c = 0; c < NUM_COL; c++) {
+            for (unsigned int r = 0; r < NUM_ROW; r++) {
+                cs[r] = b[r][c];
+            }
+            for (unsigned int r = 0; r < NUM_ROW - 3; r++) {
+                for (int i = 0; i < 4; i++) {
+                    set[i] = cs[r + i];
+                }
+                score += scoreSet(set, p);
+            }
+        }
+        
+        for (unsigned int r = 0; r < NUM_ROW - 3; r++) {
+            for (unsigned int c = 0; c < NUM_COL; c++) {
+                rs[c] = b[r][c];
+            }
+            for (unsigned int c = 0; c < NUM_COL - 3; c++) {
+                for (int i = 0; i < 4; i++) {
+                    set[i] = b[r + i][c + i];
+                }
+                score += scoreSet(set, p);
             }
         }
 
-        for(int j=0; j<m; j++) {
-            int otiles = 0;
-            for(int i=0; i<n; i++) {
-                if(tabuleiro[i][j] == 'X') {
-                    otiles = 0;
-                } else {
-                    otiles++;
-                    if(otiles == 4){
-                        verPoints.second += 1;
-                        otiles = 0;
-                    }
+        for (unsigned int r = 0; r < NUM_ROW - 3; r++) {
+            for (unsigned int c = 0; c < NUM_COL; c++) {
+                rs[c] = b[r][c];
+            }
+            for (unsigned int c = 0; c < NUM_COL - 3; c++) {
+                for (int i = 0; i < 4; i++) {
+                    set[i] = b[r + 3 - i][c + i];
                 }
+                score += scoreSet(set, p);
             }
         }
-
-        return verPoints;
+        return score;
     }
 
-    // Criar avaliar diagonal
+    int scoreSet(vector<unsigned int> v, unsigned int p) {
+        unsigned int good = 0;
+        unsigned int bad = 0;
+        unsigned int empty = 0;
+        for (unsigned int i = 0; i < v.size(); i++) {
+            good += (v[i] == p) ? 1 : 0;
+            bad += (v[i] == PLAYER || v[i] == COMPUTER) ? 1 : 0;
+            empty += (v[i] == 0) ? 1 : 0;
+        }
+        bad -= good;
+        return heuristica(good, bad, empty);
+    }
+
+    static int heuristica(int b, int r, int v) {
+        int score = 0;
+        if (b == 4) { score += 500001; }
+        else if (b == 3 && v == 1) { score += 5000; }
+        else if (b == 2 && v == 2) { score += 500; }
+        else if (r == 2 && v == 2) { score -= 501; }
+        else if (r == 3 && v == 1) { score -= 5001; }
+        else if (r == 4) { score -= 500000; }
+        return score;
+    }
+
+    char jogar() {}
+
+    ~Lig4Tradicional() {}
+private:
+    int dificuldade;
+    default_random_engine engine;
+    static const int NUM_COL = 7;
+    static const int NUM_LIN = 6;
 };
 
 int main() {
-    Lig4 lig4 = Lig4(4, 4);
-    lig4.gerencia();
+    const int total = 100;
+    int count = 0;
+    random_device rd{};
+    default_random_engine engine{rd()};
+
+    for(int i = 0; i < total; ++i){
+        char ganhador;
+        Lig4Tradicional l = Lig4Tradicional(5, engine);
+        ganhador = l.jogar();
+
+        if(ganhador == 'x') {
+            ++count;
+        }
+    }
+
+    cout << (count/total)*100 << endl;
+    return 0;
 }
