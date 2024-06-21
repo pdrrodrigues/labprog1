@@ -26,7 +26,7 @@ public:
 
         string s;
         int count = 0;
-        while(getline(inputFile, s, ',') && count < 5) {
+        while(getline(inputFile, s, ',') && count < size) {
             if(!inputFile.fail()) {
                 orderedVector.push_back(atoi(s.c_str()));
                 ++count;
